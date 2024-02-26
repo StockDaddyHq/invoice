@@ -38,7 +38,7 @@
   <!-- ========== MAIN CONTENT ========== -->
   <main id="content" role="main">
     <!-- Invoice -->
-    <div  v-if="!isFetching" class="max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto my-4 sm:my-10">
+    <div  v-if="!isFetching && !error" class="max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto my-4 sm:my-10">
       <div class="sm:w-11/12 lg:w-3/4 mx-auto">
         <!-- Card -->
         <div class="flex flex-col p-4 sm:p-10 bg-white shadow-md" id="printArea">
@@ -49,7 +49,7 @@
 
             <div class="text-start">
               <h2 class="text-2xl md:text-3xl font-semibold text-gray-800">Invoice #</h2>
-              <span class="mt-1 block text-gray-500">3682303 {{ data }}</span>
+              <span class="mt-1 block text-gray-500">3682303</span>
 
               <address class="mt-4 not-italic text-gray-800">
                 Plot No 190, Phase IV <br>
@@ -70,11 +70,12 @@
           <div class="mt-8 grid sm:grid-cols-2 gap-3">
             <div>
               <h3 class="text-lg font-semibold text-gray-800">Bill to:</h3>
-              <h3 class="text-lg font-semibold text-gray-800">Sara Williams</h3>
+              <h3 class="text-lg font-semibold text-gray-800">{{invoice.billto_name}}</h3>
+              <h3 class="text-lg text-gray-800">{{invoice.billto_company}}</h3>
+              <p class="text-gray-500">{{invoice.billto_contact}}</p>
+              <p class="text-gray-500">{{invoice.billto_email}}</p>
               <address class="mt-2 not-italic text-gray-500">
-                280 Suzanne Throughway,<br>
-                Breannabury, OR 45801,<br>
-                United States<br>
+                {{invoice.billto_address}}
               </address>
             </div>
             <!-- Col -->
@@ -84,11 +85,11 @@
               <div class="grid grid-cols-2 sm:grid-cols-1 gap-3 sm:gap-2">
                 <dl class="grid sm:grid-cols-5 gap-x-3">
                   <dt class="col-span-3 font-semibold text-gray-800">Invoice date:</dt>
-                  <dd class="col-span-2 text-gray-500">03/10/2018</dd>
+                  <dd class="col-span-2 text-gray-500">{{new Date(invoice.invoice_date).toLocaleDateString()}}</dd>
                 </dl>
                 <dl class="grid sm:grid-cols-5 gap-x-3">
                   <dt class="col-span-3 font-semibold text-gray-800">Due date:</dt>
-                  <dd class="col-span-2 text-gray-500">03/11/2018</dd>
+                  <dd class="col-span-2 text-gray-500">{{new Date(invoice.invoice_date).toLocaleDateString()}}</dd>
                 </dl>
               </div>
               <!-- End Grid -->
@@ -207,6 +208,11 @@
       </div>
     </div>
     <!-- End Invoice -->
+    <div v-else-if="error">
+      <div class="flex gap-2 justify-center mt-48">
+        <h3 class="text-lg font-semibold text-gray-800">{{error}}</h3>
+      </div>
+    </div> 
     <div v-else> 
       <div class="flex gap-2 justify-center mt-48">
         <div class="w-5 h-5 rounded-full animate-pulse bg-blue-600"></div>
@@ -232,6 +238,7 @@
     return {
       invoice: {
       },
+      error: "",
       isFetching: false,
       isLoaded: false
     };
@@ -253,13 +260,25 @@
       this.isFetching = true;
       const urlParams = new URLSearchParams(window.location.search);
       const id = urlParams.get('id');
-      fetch(`http://192.168.1.60:8055/items/invoices?payment=${id}`)
+      try{
+        fetch(`https://connect.stockdaddy.in/items/invoices?filter[payment][_eq]=${id}`)
         .then((response) => response.json())
         .then((json) => {
-          this.invoice = json.data[0];
+          
           this.isLoaded = true;
+          if(json.data==null){
+            this.error = "Invoice not found"
+          }else{
+            this.invoice = json.data[0];
+          }
         })
         .finally(() => this.isFetching = false)
+      }catch(error){
+        console.log(json.data)
+
+        this.erorr="Something went wrong!!"
+      }
+      
     },
   }).mount('#app')
 
