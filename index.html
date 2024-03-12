@@ -49,19 +49,17 @@
 
             <div class="text-start">
               <h2 class="text-2xl md:text-3xl font-semibold text-gray-800">Invoice #</h2>
-              <span class="mt-1 block text-gray-500">3682303</span>
-
-              <address class="mt-4 not-italic text-gray-800">
-                Plot No 190, Phase IV <br>
-                Udyog Vihar, Sector 18<br>
-                Gurugram<br>
-                Haryana 122015<br>
+              <span class="mt-1 block text-gray-500">{{invoice.invoice_number}}</span>
+              <p class="mt-4 font-semibold">EaseMyTrade Private Limited</p>
+              <address class="not-italic text-gray-800 max-w-56">
+                {{invoice.company_address}}<br>
               </address>
+              <p class="">CIN: U80904HR2020PTC088785</p>
             </div>
             <!-- Col -->
             <div>
-              
-              <h1 class="mt-2 text-lg md:text-xl font-semibold text-blue-600">StockDaddy</h1>
+              <img class="object-contain w-56" alt="StockDaddy" src="logo.png"/>
+              <!-- <h1 class="mt-2 text-lg md:text-xl font-semibold text-blue-600">StockDaddy</h1> -->
             </div>
           </div>
           <!-- End Grid -->
@@ -71,12 +69,13 @@
             <div>
               <h3 class="text-lg font-semibold text-gray-800">Bill to:</h3>
               <h3 class="text-lg font-semibold text-gray-800">{{invoice.billto_name}}</h3>
-              <h3 class="text-lg text-gray-800">{{invoice.billto_company}}</h3>
+              <h3 v-if="!!invoice.billto_company" class="text-lg text-gray-800">{{invoice.billto_company}}</h3>
               <p class="text-gray-500">{{invoice.billto_contact}}</p>
               <p class="text-gray-500">{{invoice.billto_email}}</p>
-              <address class="mt-2 not-italic text-gray-500">
-                {{invoice.billto_address}}
+              <address v-if="!!invoice.billto_address" class="mt-2 not-italic text-gray-500">
+                {{invoice.billto_address}} mlm
               </address>
+              <p class="text-gray-500">Place of Supply: {{invoice.place_of_supply}}</p>
             </div>
             <!-- Col -->
 
@@ -103,29 +102,29 @@
             <div class="border border-gray-200 p-4 rounded-lg space-y-4">
               <div class="hidden sm:grid sm:grid-cols-5">
                 <div class="sm:col-span-2 text-xs font-medium text-gray-500 uppercase">Item</div>
+                <div class="text-start text-xs font-medium text-gray-500 uppercase">HSN/SAC</div>
                 <div class="text-start text-xs font-medium text-gray-500 uppercase">Qty</div>
-                <div class="text-start text-xs font-medium text-gray-500 uppercase">Rate</div>
                 <div class="text-end text-xs font-medium text-gray-500 uppercase">Amount</div>
               </div>
 
               <div class="hidden sm:block border-b border-gray-200"></div>
 
-              <div class="grid grid-cols-3 sm:grid-cols-5 gap-2">
+              <div v-for="item in invoice.items" class="grid grid-cols-3 sm:grid-cols-5 gap-2">
                 <div class="col-span-full sm:col-span-2">
                   <h5 class="sm:hidden text-xs font-medium text-gray-500 uppercase">Item</h5>
-                  <p class="font-medium text-gray-800">Stock Market Beginner Course</p>
+                  <p class="font-medium text-gray-800">{{item.name}}</p>
+                </div>
+                <div>
+                  <h5 class="sm:hidden text-xs font-medium text-gray-500 uppercase">HSN/SAC</h5>
+                  <p class="text-gray-800">{{item.hsn}}</p>
                 </div>
                 <div>
                   <h5 class="sm:hidden text-xs font-medium text-gray-500 uppercase">Qty</h5>
-                  <p class="text-gray-800">1</p>
-                </div>
-                <div>
-                  <h5 class="sm:hidden text-xs font-medium text-gray-500 uppercase">Rate</h5>
-                  <p class="text-gray-800">5</p>
+                  <p class="text-gray-800">{{item.quantity}}</p>
                 </div>
                 <div>
                   <h5 class="sm:hidden text-xs font-medium text-gray-500 uppercase">Amount</h5>
-                  <p class="sm:text-end text-gray-800">₹500</p>
+                  <p class="sm:text-end text-gray-800">₹ {{item.amount}}</p>
                 </div>
               </div>
 
@@ -141,32 +140,32 @@
               <div class="grid grid-cols-2 sm:grid-cols-1 gap-3 sm:gap-2">
                 <dl class="grid sm:grid-cols-5 gap-x-3">
                   <dt class="col-span-3 font-semibold text-gray-800">Subtotal:</dt>
-                  <dd class="col-span-2 text-gray-500">₹2750.00</dd>
+                  <dd class="col-span-2 text-gray-500">₹ {{invoice.sub_total}}</dd>
                 </dl>
 
                 <dl class="grid sm:grid-cols-5 gap-x-3">
                   <dt class="col-span-3 font-semibold text-gray-800">Discount:</dt>
-                  <dd class="col-span-2 text-gray-500">₹0.00</dd>
+                  <dd class="col-span-2 text-gray-500">₹ {{invoice.discount}}</dd>
                 </dl>
 
                 <dl class="grid sm:grid-cols-5 gap-x-3">
                   <dt class="col-span-3 font-semibold text-gray-800">Total:</dt>
-                  <dd class="col-span-2 text-gray-500">₹2750.00</dd>
+                  <dd class="col-span-2 text-gray-500">₹ {{invoice.total}}</dd>
                 </dl>
-
-                <dl class="grid sm:grid-cols-5 gap-x-3">
-                  <dt class="col-span-3 font-semibold text-gray-800">GST:</dt>
-                  <dd class="col-span-2 text-gray-500">₹39.00</dd>
+                
+                <dl v-for="tax in invoice.gst" class="grid sm:grid-cols-5 gap-x-3">
+                  <dt class="col-span-3 font-semibold text-gray-800">{{tax.type.toUpperCase()}} @ {{tax.percentage }}%</dt>
+                  <dd class="col-span-2 text-gray-500">₹ {{tax.amount}}</dd>
                 </dl>
 
                 <dl class="grid sm:grid-cols-5 gap-x-3">
                   <dt class="col-span-3 font-semibold text-gray-800">Amount paid:</dt>
-                  <dd class="col-span-2 text-gray-500">₹2789.00</dd>
+                  <dd class="col-span-2 text-gray-500">₹{{invoice.amount_paid}}</dd>
                 </dl>
 
                 <dl class="grid sm:grid-cols-5 gap-x-3">
                   <dt class="col-span-3 font-semibold text-gray-800">Due balance:</dt>
-                  <dd class="col-span-2 text-gray-500">₹0.00</dd>
+                  <dd class="col-span-2 text-gray-500">₹ {{invoice.due_balance}}</dd>
                 </dl>
               </div>
               <!-- End Grid -->
@@ -261,7 +260,7 @@
       const urlParams = new URLSearchParams(window.location.search);
       const id = urlParams.get('id');
       try{
-        fetch(`https://connect.stockdaddy.in/items/invoices?filter[payment][_eq]=${id}`)
+        fetch(`https://connect.stockdaddy.in/items/invoices/${id}`)
         .then((response) => response.json())
         .then((json) => {
           
@@ -269,7 +268,7 @@
           if(json.data==null){
             this.error = "Invoice not found"
           }else{
-            this.invoice = json.data[0];
+            this.invoice = json.data;
           }
         })
         .finally(() => this.isFetching = false)
